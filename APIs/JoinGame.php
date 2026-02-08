@@ -226,6 +226,7 @@ if ($decklink != "") {
   $isFaBDB = str_contains($decklink, "fabdb");
   $isFaBMeta = str_contains($decklink, "fabmeta");
   $isFaBTCGMeta = str_contains($decklink, "fabtcgmeta");
+  $isFaBBazaar = str_contains($decklink, "fabbazaar");
   if ($isFaBDB) {
     $decklinkArr = explode("/", $decklink);
     $slug = $decklinkArr[count($decklinkArr) - 1];
@@ -246,6 +247,23 @@ if ($decklink != "") {
     $slug = $decklinkArr[0];
     $apiLink = "https://atofkpq0x8.execute-api.us-east-2.amazonaws.com/prod/v1/decks/" . $slug;
     if ($matchup != "") $apiLink .= "?matchupId=" . $matchup;
+   } else if ($isFaBBazaar) {                                                                                                                                                                 
+      preg_match('/fabbazaar\.app\/decks\/([a-zA-Z0-9_-]+)/', $decklink, $matches);
+
+      if (!isset($matches[1])) {
+        $response->error = "Invalid FaB Bazaar deck URL format. Expected: https://fabbazaar.app/decks/DECK_ID";
+        echo (json_encode($response));
+        exit;
+      }
+      $deckId = $matches[1];
+      $headers = array(
+        "x-api-key: " . $FaBBazaarKey,
+        "Content-Type: application/json",
+        "User-Agent: Talishar"
+      );
+      curl_setopt($curl, CURLOPT_HTTPHEADER, $headers);
+      $apiLink = "https://fabbazaar.app/api/decks/" . $deckId . "/talishar";
+      curl_setopt($curl, CURLOPT_TIMEOUT, 10);
   } else {
     $decklinkArr = explode("/", $decklink);
     $slug = $decklinkArr[count($decklinkArr) - 1];
